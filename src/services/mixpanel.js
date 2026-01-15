@@ -247,24 +247,6 @@ async function listPropertyValues(event, propertyName, limit = 50) {
   };
 }
 
-function buildMixpanelLink(queryType, params) {
-  const projectId = config.mixpanel.projectId;
-  const baseUrl = `https://mixpanel.com/report/${projectId}`;
-
-  switch (queryType) {
-    case 'segmentation':
-      return `${baseUrl}/insights`;
-    case 'funnels':
-      return `${baseUrl}/funnels`;
-    case 'retention':
-      return `${baseUrl}/retention`;
-    case 'events':
-      return `${baseUrl}/insights`;
-    default:
-      return baseUrl;
-  }
-}
-
 module.exports = {
   querySegmentation,
   queryInsights,
@@ -272,6 +254,5 @@ module.exports = {
   queryRetention,
   listEvents,
   listEventProperties,
-  listPropertyValues,
-  buildMixpanelLink
+  listPropertyValues
 };

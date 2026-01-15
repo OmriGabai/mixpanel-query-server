@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Result elements
   const summaryText = document.getElementById('summary-text');
-  const mixpanelLink = document.getElementById('mixpanel-link');
   const dataTableContainer = document.getElementById('data-table-container');
   const jsonOutput = document.getElementById('json-output');
 
@@ -99,7 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderResults(data) {
     // Render summary
     summaryText.textContent = data.summary;
-    mixpanelLink.href = data.mixpanel_link;
 
     // Render data table
     renderDataTable(data.data);

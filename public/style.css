@@ -120,23 +120,8 @@ header h1 {
 }
 
 #summary-text {
-  margin: 0 0 15px;
+  margin: 0;
   font-size: 16px;
-}
-
-.btn-link {
-  display: inline-block;
-  padding: 10px 20px;
-  color: white;
-  background: #3b82f6;
-  text-decoration: none;
-  border-radius: 6px;
-  font-weight: 500;
-  transition: background 0.2s;
-}
-
-.btn-link:hover {
-  background: #2563eb;
 }
 
 /* Data Tables */

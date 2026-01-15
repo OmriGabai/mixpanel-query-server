@@ -77,9 +77,6 @@ router.get('/query', async (req, res) => {
     console.log('✅ Summary generated');
     console.log('   Tokens:', summaryResponse.debug.tokens);
 
-    // Step 4: Build Mixpanel link
-    const mixpanelLink = mixpanel.buildMixpanelLink(queryType, interpretation.params);
-
     // Calculate total tokens
     const totalTokens = interpretationResponse.debug.tokens.total + summaryResponse.debug.tokens.total;
 
@@ -87,7 +84,6 @@ router.get('/query', async (req, res) => {
     console.log('📤 RESPONSE');
     console.log('========================================');
     console.log('Summary:', summary);
-    console.log('Link:', mixpanelLink);
     console.log('Total Tokens:', totalTokens);
     console.log('========================================\n');
 
@@ -97,7 +93,6 @@ router.get('/query', async (req, res) => {
       question: q,
       summary,
       data,
-      mixpanel_link: mixpanelLink,
       debug: {
         openai_interpretation: interpretationResponse.debug,
         openai_summarization: summaryResponse.debug,

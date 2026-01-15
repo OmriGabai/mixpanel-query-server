@@ -10,8 +10,11 @@
 <body>
   <div class="container">
     <header>
-      <h1>Mixpanel Query Server</h1>
-      <p class="subtitle">Test your natural language queries</p>
+      <div class="header-content">
+        <h1>Mixpanel Query Server</h1>
+        <p class="subtitle">Test your natural language queries</p>
+      </div>
+      <a href="/schema/" class="nav-link">Schema Manager &rarr;</a>
     </header>
 
     <form id="query-form">
@@ -40,7 +43,6 @@
         <div id="summary-card" class="card">
           <h2>Summary</h2>
           <p id="summary-text"></p>
-          <a id="mixpanel-link" href="#" target="_blank" class="btn-link">Open in Mixpanel</a>
         </div>
 
         <div id="data-card" class="card">
