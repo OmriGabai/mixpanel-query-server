@@ -2,7 +2,8 @@ require('dotenv').config();
 
 const requiredEnvVars = [
   'OPENAI_API_KEY',
-  'MIXPANEL_API_SECRET',
+  'MIXPANEL_SERVICE_ACCOUNT_USERNAME',
+  'MIXPANEL_SERVICE_ACCOUNT_SECRET',
   'MIXPANEL_PROJECT_ID'
 ];
 
@@ -24,7 +25,8 @@ module.exports = {
     apiKey: process.env.OPENAI_API_KEY
   },
   mixpanel: {
-    apiSecret: process.env.MIXPANEL_API_SECRET,
+    username: process.env.MIXPANEL_SERVICE_ACCOUNT_USERNAME,
+    secret: process.env.MIXPANEL_SERVICE_ACCOUNT_SECRET,
     projectId: process.env.MIXPANEL_PROJECT_ID
   }
 };
