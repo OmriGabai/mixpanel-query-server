@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mixpanel Query Server - Test UI</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Mixpanel Query Server</h1>
+      <p class="subtitle">Test your natural language queries</p>
+    </header>
+
+    <form id="query-form">
+      <div class="input-group">
+        <input
+          type="text"
+          id="query-input"
+          placeholder="Ask a question, e.g., 'How many signups last week?'"
+          maxlength="500"
+          required
+        >
+        <button type="submit" id="submit-btn">
+          <span class="btn-text">Query</span>
+          <span class="btn-loading" hidden>...</span>
+        </button>
+      </div>
+    </form>
+
+    <div id="results" hidden>
+      <div class="view-toggle">
+        <button class="toggle-btn active" data-view="formatted">Formatted</button>
+        <button class="toggle-btn" data-view="json">Raw JSON</button>
+      </div>
+
+      <div id="formatted-view">
+        <div id="summary-card" class="card">
+          <h2>Summary</h2>
+          <p id="summary-text"></p>
+          <a id="mixpanel-link" href="#" target="_blank" class="btn-link">Open in Mixpanel</a>
+        </div>
+
+        <div id="data-card" class="card">
+          <h2>Data</h2>
+          <div id="data-table-container"></div>
+        </div>
+      </div>
+
+      <div id="json-view" hidden>
+        <pre><code id="json-output" class="language-json"></code></pre>
+      </div>
+
+      <details id="debug-panel">
+        <summary>
+          Dev Data
+          <span id="token-badge" class="badge"></span>
+        </summary>
+        <div class="debug-content">
+          <div class="debug-section">
+            <h3>OpenAI Interpretation</h3>
+            <div class="token-info">
+              Tokens: <span id="interpretation-tokens"></span>
+            </div>
+            <details>
+              <summary>Request</summary>
+              <pre><code id="interpretation-request" class="language-json"></code></pre>
+            </details>
+            <details>
+              <summary>Response</summary>
+              <pre><code id="interpretation-response" class="language-json"></code></pre>
+            </details>
+          </div>
+
+          <div class="debug-section">
+            <h3>OpenAI Summarization</h3>
+            <div class="token-info">
+              Tokens: <span id="summarization-tokens"></span>
+            </div>
+            <details>
+              <summary>Request</summary>
+              <pre><code id="summarization-request" class="language-json"></code></pre>
+            </details>
+            <details>
+              <summary>Response</summary>
+              <pre><code id="summarization-response" class="language-json"></code></pre>
+            </details>
+          </div>
+
+          <div class="debug-section">
+            <h3>Mixpanel API</h3>
+            <details>
+              <summary>Request</summary>
+              <pre><code id="mixpanel-request" class="language-json"></code></pre>
+            </details>
+            <details>
+              <summary>Response</summary>
+              <pre><code id="mixpanel-response" class="language-json"></code></pre>
+            </details>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <div id="error-container" class="card error" hidden>
+      <h2>Error</h2>
+      <p id="error-message"></p>
+      <p id="error-details" class="error-details"></p>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

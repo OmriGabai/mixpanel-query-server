@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schema Manager - Mixpanel Query Server</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Schema Manager</h1>
+      <div class="header-actions">
+        <button id="discoverAllBtn" class="btn btn-primary">Discover All</button>
+        <a href="/" class="btn btn-secondary">Back to Query</a>
+      </div>
+    </header>
+
+    <div id="loading" class="loading">Loading events...</div>
+    <div id="error" class="error hidden"></div>
+
+    <div id="content" class="hidden">
+      <div class="stats">
+        <span id="eventCount">0 events</span>
+        <span id="propertyCount">0 total properties</span>
+      </div>
+
+      <table class="events-table">
+        <thead>
+          <tr>
+            <th>Event Name</th>
+            <th>Description</th>
+            <th>Properties</th>
+            <th>Usage</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="eventsBody">
+        </tbody>
+      </table>
+
+      <div id="emptyState" class="empty-state hidden">
+        <p>No events discovered yet.</p>
+        <p>Click "Discover All" to pull events from Mixpanel.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- LLM Confirmation Modal -->
+  <div id="llmModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Generate Description with AI</h2>
+        <button class="modal-close" onclick="closeLlmModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="modalStep1">
+          <p>This will send the following to OpenAI:</p>
+          <pre id="modalContext"></pre>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeLlmModal()">Cancel</button>
+            <button id="generateBtn" class="btn btn-primary">Generate</button>
+          </div>
+        </div>
+        <div id="modalStep2" class="hidden">
+          <p>Generated description:</p>
+          <textarea id="generatedDescription" rows="3"></textarea>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeLlmModal()">Cancel</button>
+            <button id="saveDescriptionBtn" class="btn btn-primary">Save Description</button>
+          </div>
+        </div>
+        <div id="modalLoading" class="hidden">
+          <p>Generating description...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="api.js"></script>
+  <script src="events.js"></script>
+</body>
+</html>
