@@ -7,52 +7,54 @@
 - [x] Create `.env.example` with placeholder values
 - [x] Create `PRD.md`
 - [x] Create `PROGRESS.md` with all steps as checkboxes
-- [ ] Initial commit
+- [x] Initial commit
 
 ## Phase 2: Project Scaffolding
-- [ ] Run `npm init -y`
-- [ ] Install dependencies (`express`, `dotenv`, `openai`)
-- [ ] Create folder structure (`src/`, `routes/`, `services/`, `utils/`)
-- [ ] Create `src/config.js` - env loader with validation
-- [ ] Create `src/index.js` - Express server with `/health` endpoint
-- [ ] Add npm scripts (`start`, `dev`)
-- [ ] Test server starts and `/health` returns OK
-- [ ] Commit
+- [x] Run `npm init -y`
+- [x] Install dependencies (`express`, `dotenv`, `openai`)
+- [x] Create folder structure (`src/`, `routes/`, `services/`, `utils/`)
+- [x] Create `src/config.js` - env loader with validation
+- [x] Create `src/index.js` - Express server with `/health` endpoint
+- [x] Add npm scripts (`start`, `dev`)
+- [x] Test server starts and `/health` returns OK
+- [x] Commit
 
 ## Phase 3: Mixpanel Integration
-- [ ] Research if Mixpanel MCP server exists
-- [ ] If MCP exists: install and configure MCP client
-- [ ] If no MCP: plan direct Mixpanel REST API calls
-- [ ] Create `src/services/mixpanel.js` - query wrapper
-- [ ] Create `.env` with real credentials (local only)
-- [ ] Test Mixpanel connection with sample query
-- [ ] Commit
+- [x] Research if Mixpanel MCP server exists (found official MCP, using REST API for simplicity)
+- [x] Using direct Mixpanel REST API (Service Account auth)
+- [x] Create `src/services/mixpanel.js` - query wrapper
+- [ ] Test Mixpanel connection with sample query (pending real credentials)
+- [x] Commit
 
 ## Phase 4: OpenAI Integration
-- [ ] Create `src/services/openai.js` - OpenAI client
-- [ ] Write prompt for interpreting natural language → structured query
-- [ ] Write prompt for summarizing data → natural language
-- [ ] Test interpretation with sample questions
-- [ ] Test summarization with sample data
-- [ ] Commit
+- [x] Create `src/services/openai.js` - OpenAI client
+- [x] Write prompt for interpreting natural language → structured query
+- [x] Write prompt for summarizing data → natural language
+- [ ] Test interpretation with sample questions (pending full test)
+- [ ] Test summarization with sample data (pending full test)
+- [x] Commit
 
 ## Phase 5: Query Endpoint
-- [ ] Create `src/routes/query.js` - GET `/query` handler
-- [ ] Wire up full flow: question → OpenAI → Mixpanel → OpenAI → response
-- [ ] Implement JSON response format (summary, data, mixpanel_link)
-- [ ] Add error handling with consistent error format
-- [ ] Test end-to-end with real question
-- [ ] Commit
+- [x] Create `src/routes/query.js` - GET `/query` handler
+- [x] Wire up full flow: question → OpenAI → Mixpanel → OpenAI → response
+- [x] Implement JSON response format (summary, data, mixpanel_link)
+- [x] Add error handling with consistent error format
+- [ ] Test end-to-end with real question (pending real Mixpanel credentials)
+- [x] Commit
 
 ## Phase 6: Polish & Documentation
-- [ ] Add input validation (check `q` param exists, length limits)
-- [ ] Add startup validation (fail fast if env vars missing)
-- [ ] Create `README.md` with setup and usage instructions
-- [ ] Update `PROGRESS.md` marking all complete
-- [ ] Final commit
+- [x] Add input validation (check `q` param exists, length limits)
+- [x] Add startup validation (fail fast if env vars missing)
+- [x] Create `README.md` with setup and usage instructions
+- [x] Update `PROGRESS.md` marking all complete
+- [x] Final commit
 
 ---
 
-**Total: 39 steps across 6 phases**
+**Status: COMPLETE** (pending end-to-end test with real Mixpanel credentials)
 
-**Current Status:** Phase 1 - Repository Setup
+## Next Steps
+
+1. Add real Mixpanel service account credentials to `.env`
+2. Run `npm run dev` to start the server
+3. Test with: `curl "http://localhost:3000/query?q=What%20are%20the%20top%20events"`
