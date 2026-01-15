@@ -30,7 +30,184 @@ document.addEventListener('DOMContentLoaded', () => {
   const errorMessage = document.getElementById('error-message');
   const errorDetails = document.getElementById('error-details');
 
+  // History elements
+  const historySection = document.getElementById('history-section');
+  const historyList = document.getElementById('history-list');
+  const clearHistoryBtn = document.getElementById('clear-history');
+  const autocompleteList = document.getElementById('autocomplete-list');
+
   let currentResponse = null;
+  let selectedAutocompleteIndex = -1;
+  const HISTORY_KEY = 'mixpanel-query-history';
+  const MAX_HISTORY = 20;
+
+  // History functions
+  function getHistory() {
+    try {
+      return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveToHistory(query) {
+    const history = getHistory();
+    // Remove if already exists (to move to top)
+    const filtered = history.filter(q => q !== query);
+    // Add to beginning
+    filtered.unshift(query);
+    // Keep only MAX_HISTORY items
+    const trimmed = filtered.slice(0, MAX_HISTORY);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed));
+    renderHistory();
+  }
+
+  function clearHistory() {
+    localStorage.removeItem(HISTORY_KEY);
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const history = getHistory();
+    historyList.innerHTML = '';
+
+    if (history.length === 0) {
+      historySection.hidden = true;
+      return;
+    }
+
+    historySection.hidden = false;
+    history.forEach(query => {
+      const li = document.createElement('li');
+      li.textContent = query;
+      li.addEventListener('click', () => {
+        input.value = query;
+        input.focus();
+        hideAutocomplete();
+      });
+      historyList.appendChild(li);
+    });
+  }
+
+  // Autocomplete functions
+  function showAutocomplete(filter = '') {
+    const history = getHistory();
+    const filterLower = filter.toLowerCase();
+    const matches = filter
+      ? history.filter(q => q.toLowerCase().includes(filterLower))
+      : history;
+
+    if (matches.length === 0) {
+      hideAutocomplete();
+      return;
+    }
+
+    autocompleteList.innerHTML = '';
+    selectedAutocompleteIndex = -1;
+
+    matches.slice(0, 8).forEach((query, index) => {
+      const li = document.createElement('li');
+
+      // Highlight matching text
+      if (filter) {
+        const idx = query.toLowerCase().indexOf(filterLower);
+        if (idx >= 0) {
+          li.innerHTML =
+            escapeHtml(query.slice(0, idx)) +
+            '<span class="match">' + escapeHtml(query.slice(idx, idx + filter.length)) + '</span>' +
+            escapeHtml(query.slice(idx + filter.length));
+        } else {
+          li.textContent = query;
+        }
+      } else {
+        li.textContent = query;
+      }
+
+      li.addEventListener('click', () => {
+        input.value = query;
+        hideAutocomplete();
+        form.dispatchEvent(new Event('submit'));
+      });
+      li.addEventListener('mouseenter', () => {
+        selectedAutocompleteIndex = index;
+        updateAutocompleteSelection();
+      });
+      autocompleteList.appendChild(li);
+    });
+
+    autocompleteList.hidden = false;
+  }
+
+  function hideAutocomplete() {
+    autocompleteList.hidden = true;
+    selectedAutocompleteIndex = -1;
+  }
+
+  function updateAutocompleteSelection() {
+    const items = autocompleteList.querySelectorAll('li');
+    items.forEach((item, idx) => {
+      item.classList.toggle('selected', idx === selectedAutocompleteIndex);
+    });
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Input event handlers for autocomplete
+  input.addEventListener('input', () => {
+    const value = input.value.trim();
+    if (value) {
+      showAutocomplete(value);
+    } else {
+      showAutocomplete();
+    }
+  });
+
+  input.addEventListener('focus', () => {
+    if (getHistory().length > 0) {
+      showAutocomplete(input.value.trim());
+    }
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (autocompleteList.hidden) return;
+
+    const items = autocompleteList.querySelectorAll('li');
+    if (items.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedAutocompleteIndex = Math.min(selectedAutocompleteIndex + 1, items.length - 1);
+      updateAutocompleteSelection();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedAutocompleteIndex = Math.max(selectedAutocompleteIndex - 1, -1);
+      updateAutocompleteSelection();
+    } else if (e.key === 'Enter' && selectedAutocompleteIndex >= 0) {
+      e.preventDefault();
+      input.value = items[selectedAutocompleteIndex].textContent;
+      hideAutocomplete();
+      form.dispatchEvent(new Event('submit'));
+    } else if (e.key === 'Escape') {
+      hideAutocomplete();
+    }
+  });
+
+  // Hide autocomplete when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.input-wrapper')) {
+      hideAutocomplete();
+    }
+  });
+
+  // Clear history button
+  clearHistoryBtn.addEventListener('click', clearHistory);
+
+  // Initialize history display
+  renderHistory();
 
   // Handle form submission
   form.addEventListener('submit', async (e) => {
@@ -38,6 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const query = input.value.trim();
     if (!query) return;
 
+    hideAutocomplete();
     setLoading(true);
     hideError();
     results.hidden = true;
@@ -50,6 +228,9 @@ document.addEventListener('DOMContentLoaded', () => {
         showError(data.error, data.details);
         return;
       }
+
+      // Save successful query to history
+      saveToHistory(query);
 
       currentResponse = data;
       renderResults(data);

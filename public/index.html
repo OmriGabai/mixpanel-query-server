@@ -19,19 +19,31 @@
 
     <form id="query-form">
       <div class="input-group">
-        <input
-          type="text"
-          id="query-input"
-          placeholder="Ask a question, e.g., 'How many signups last week?'"
-          maxlength="500"
-          required
-        >
+        <div class="input-wrapper">
+          <input
+            type="text"
+            id="query-input"
+            placeholder="Ask a question, e.g., 'How many signups last week?'"
+            maxlength="500"
+            required
+            autocomplete="off"
+          >
+          <ul id="autocomplete-list" class="autocomplete-list" hidden></ul>
+        </div>
         <button type="submit" id="submit-btn">
           <span class="btn-text">Query</span>
           <span class="btn-loading" hidden>...</span>
         </button>
       </div>
     </form>
+
+    <div id="history-section" class="history-section" hidden>
+      <div class="history-header">
+        <span>Recent Queries</span>
+        <button id="clear-history" class="clear-btn">Clear</button>
+      </div>
+      <ul id="history-list" class="history-list"></ul>
+    </div>
 
     <div id="results" hidden>
       <div class="view-toggle">
