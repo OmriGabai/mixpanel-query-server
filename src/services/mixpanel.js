@@ -110,6 +110,7 @@ async function queryRetention({ event, retention_type = 'birth', born_event, fro
 async function listEvents() {
   const params = new URLSearchParams({
     project_id: config.mixpanel.projectId,
+    type: 'general',
     limit: 100
   });
 
