@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Result elements
   const summaryText = document.getElementById('summary-text');
   const dataTableContainer = document.getElementById('data-table-container');
+  const dataChartContainer = document.getElementById('data-chart-container');
+  const dataChartCanvas = document.getElementById('data-chart');
+  const dataToggleBtns = document.querySelectorAll('.data-toggle-btn');
   const jsonOutput = document.getElementById('json-output');
 
   // Debug elements
@@ -37,6 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const autocompleteList = document.getElementById('autocomplete-list');
 
   let currentResponse = null;
+  let currentData = null;
+  let currentChart = null;
   let selectedAutocompleteIndex = -1;
   const HISTORY_KEY = 'mixpanel-query-history';
   const MAX_HISTORY = 20;
@@ -259,6 +264,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Handle data view toggle (table/chart)
+  dataToggleBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const view = btn.dataset.view;
+      dataToggleBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      if (view === 'table') {
+        dataTableContainer.hidden = false;
+        dataChartContainer.hidden = true;
+      } else {
+        dataTableContainer.hidden = true;
+        dataChartContainer.hidden = false;
+        if (currentData) {
+          renderChart(currentData);
+        }
+      }
+    });
+  });
+
   function setLoading(loading) {
     submitBtn.disabled = loading;
     submitBtn.querySelector('.btn-text').hidden = loading;
@@ -279,6 +304,21 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderResults(data) {
     // Render summary
     summaryText.textContent = data.summary;
+
+    // Store data for chart rendering
+    currentData = data.data;
+
+    // Reset to table view
+    dataToggleBtns.forEach(b => b.classList.remove('active'));
+    dataToggleBtns[0].classList.add('active');
+    dataTableContainer.hidden = false;
+    dataChartContainer.hidden = true;
+
+    // Destroy existing chart
+    if (currentChart) {
+      currentChart.destroy();
+      currentChart = null;
+    }
 
     // Render data table
     renderDataTable(data.data);
@@ -496,5 +536,165 @@ document.addEventListener('DOMContentLoaded', () => {
   function formatNumber(num) {
     if (typeof num !== 'number') return num;
     return num.toLocaleString();
+  }
+
+  // Chart rendering
+  const CHART_COLORS = [
+    '#7c3aed', '#3b82f6', '#10b981', '#f59e0b', '#ef4444',
+    '#8b5cf6', '#06b6d4', '#84cc16', '#f97316', '#ec4899'
+  ];
+
+  function renderChart(data) {
+    // Destroy existing chart
+    if (currentChart) {
+      currentChart.destroy();
+      currentChart = null;
+    }
+
+    if (!data || typeof data !== 'object') {
+      return;
+    }
+
+    // Handle segmentation data format
+    if (data.data && data.data.values && data.data.series) {
+      renderSegmentationChart(data.data);
+      return;
+    }
+
+    // Handle events list
+    if (data.events && Array.isArray(data.events)) {
+      renderEventsChart(data.events);
+      return;
+    }
+
+    // Handle array of objects with numeric values
+    if (Array.isArray(data) && data.length > 0) {
+      renderArrayChart(data);
+      return;
+    }
+  }
+
+  function renderSegmentationChart(data) {
+    const { values, series } = data;
+    const eventNames = Object.keys(values);
+
+    if (eventNames.length === 0 || series.length === 0) return;
+
+    const datasets = eventNames.map((name, index) => ({
+      label: name,
+      data: series.map(date => values[name]?.[date] || 0),
+      borderColor: CHART_COLORS[index % CHART_COLORS.length],
+      backgroundColor: CHART_COLORS[index % CHART_COLORS.length] + '20',
+      tension: 0.3,
+      fill: eventNames.length === 1
+    }));
+
+    currentChart = new Chart(dataChartCanvas, {
+      type: 'line',
+      data: {
+        labels: series,
+        datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: eventNames.length > 1,
+            position: 'top'
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: value => formatNumber(value)
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function renderEventsChart(events) {
+    const sortedEvents = [...events]
+      .sort((a, b) => (b.count || 0) - (a.count || 0))
+      .slice(0, 15);
+
+    const labels = sortedEvents.map(e => e.event || e.name || String(e));
+    const data = sortedEvents.map(e => e.count || 0);
+
+    currentChart = new Chart(dataChartCanvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Event Count',
+          data,
+          backgroundColor: CHART_COLORS.slice(0, labels.length),
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: {
+              callback: value => formatNumber(value)
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function renderArrayChart(arr) {
+    const keys = Object.keys(arr[0]);
+    const numericKeys = keys.filter(k => typeof arr[0][k] === 'number');
+    const labelKey = keys.find(k => typeof arr[0][k] === 'string') || keys[0];
+
+    if (numericKeys.length === 0) return;
+
+    const labels = arr.map(item => String(item[labelKey])).slice(0, 20);
+    const datasets = numericKeys.slice(0, 5).map((key, index) => ({
+      label: key,
+      data: arr.map(item => item[key] || 0).slice(0, 20),
+      backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
+      borderRadius: 4
+    }));
+
+    currentChart = new Chart(dataChartCanvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: numericKeys.length > 1,
+            position: 'top'
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: value => formatNumber(value)
+            }
+          }
+        }
+      }
+    });
   }
 });

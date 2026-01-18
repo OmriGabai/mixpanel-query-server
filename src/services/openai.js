@@ -21,10 +21,13 @@ function buildInterpretationPrompt() {
       const context = db.getSchemaContextForPrompt();
       if (context && context.trim()) {
         schemaContext = `
-Available events in this Mixpanel project:
+Available events and their properties in this Mixpanel project:
 ${context}
 
-IMPORTANT: Use the EXACT event names from the list above when they match the user's question.
+CRITICAL: You MUST use the EXACT event and property names from the list above.
+- Do NOT guess or invent property names
+- If the user asks to segment by something, find the matching property from the list
+- If no matching property exists, omit the "on" parameter
 `;
       }
     } catch (e) {
@@ -43,7 +46,7 @@ Return a JSON object with this structure:
     "from_date": "YYYY-MM-DD",
     "to_date": "YYYY-MM-DD",
     "on": "property to segment by (optional)",
-    "where": "filter expression (optional)",
+    "where": "filter expression using Mixpanel syntax (optional)",
     "unit": "day" | "week" | "month"
 
     // For retention:
@@ -56,6 +59,20 @@ Return a JSON object with this structure:
     // No additional params needed - just lists top events
   }
 }
+
+CRITICAL - Mixpanel "where" clause syntax:
+- Use double quotes for property names and string values
+- Format: properties["property_name"] == "value"
+- Examples:
+  - properties["service_name"] == "os_ios"
+  - properties["country"] == "US"
+  - properties["plan_type"] == "premium"
+  - properties["amount"] > 100
+- For Mixpanel built-in properties starting with $:
+  - properties["$os"] == "iOS"
+  - properties["$browser"] == "Chrome"
+- Do NOT use single quotes - always use double quotes
+- Do NOT use bare property names like service_name == "value"
 
 Important:
 - Default to the last 7 days if no date range is specified

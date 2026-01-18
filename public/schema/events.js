@@ -67,18 +67,111 @@ function renderEvents() {
   eventsBodyEl.innerHTML = events.map(event => `
     <tr>
       <td><a href="event.html?id=${event.id}">${escapeHtml(event.name)}</a></td>
-      <td class="truncate ${!event.description ? 'no-desc' : ''}">
-        ${event.description ? escapeHtml(event.description) : 'No description'}
+      <td class="description-cell ${!event.description ? 'no-desc' : ''}"
+          data-event-id="${event.id}"
+          onclick="startEditDescription(this, ${event.id})">
+        <span class="description-text">${event.description ? escapeHtml(event.description) : 'Click to add description'}</span>
       </td>
       <td>${event.property_count || 0}</td>
       <td class="usage-count">${formatNumber(event.event_count)}</td>
       <td>
-        <button class="btn btn-small btn-secondary" onclick="openLlmModal(${event.id}, 'event')">
+        <button class="btn btn-small btn-secondary" onclick="openLlmModal(${event.id}, 'event'); event.stopPropagation();">
           AI Describe
         </button>
       </td>
     </tr>
   `).join('');
+}
+
+// Inline Description Editing
+let currentEditCell = null;
+
+function startEditDescription(cell, eventId) {
+  // Don't start if already editing this cell
+  if (cell.classList.contains('editing')) return;
+
+  // Cancel any other edit in progress
+  if (currentEditCell && currentEditCell !== cell) {
+    cancelEdit(currentEditCell);
+  }
+
+  const event = events.find(e => e.id === eventId);
+  const currentDescription = event?.description || '';
+
+  cell.classList.add('editing');
+  currentEditCell = cell;
+
+  const input = document.createElement('textarea');
+  input.className = 'inline-edit-input';
+  input.value = currentDescription;
+  input.placeholder = 'Enter description...';
+  input.rows = 3;
+
+  // Save on Cmd/Ctrl+Enter, cancel on Escape
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      saveInlineEdit(cell, eventId, input.value);
+    } else if (e.key === 'Escape') {
+      cancelEdit(cell);
+    }
+  });
+
+  // Save on blur (clicking outside)
+  input.addEventListener('blur', () => {
+    // Small delay to allow click events to fire first
+    setTimeout(() => {
+      if (cell.classList.contains('editing')) {
+        saveInlineEdit(cell, eventId, input.value);
+      }
+    }, 100);
+  });
+
+  // Create hint
+  const hint = document.createElement('div');
+  hint.className = 'edit-hint';
+  hint.textContent = 'Cmd/Ctrl+Enter to save, Esc to cancel';
+
+  // Replace content with input and hint
+  cell.innerHTML = '';
+  cell.appendChild(input);
+  cell.appendChild(hint);
+  input.focus();
+  input.select();
+}
+
+async function saveInlineEdit(cell, eventId, newDescription) {
+  const trimmedDesc = newDescription.trim();
+
+  try {
+    await updateEventDescription(eventId, trimmedDesc, 'manual');
+
+    // Update local data
+    const event = events.find(e => e.id === eventId);
+    if (event) {
+      event.description = trimmedDesc;
+      event.description_source = 'manual';
+    }
+
+    // Update cell display
+    finishEdit(cell, trimmedDesc);
+  } catch (error) {
+    alert('Error saving description: ' + error.message);
+    cancelEdit(cell);
+  }
+}
+
+function cancelEdit(cell) {
+  const eventId = parseInt(cell.dataset.eventId);
+  const event = events.find(e => e.id === eventId);
+  finishEdit(cell, event?.description || '');
+}
+
+function finishEdit(cell, description) {
+  cell.classList.remove('editing');
+  cell.classList.toggle('no-desc', !description);
+  cell.innerHTML = `<span class="description-text">${description ? escapeHtml(description) : 'Click to add description'}</span>`;
+  currentEditCell = null;
 }
 
 async function handleDiscoverAll() {

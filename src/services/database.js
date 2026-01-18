@@ -132,8 +132,11 @@ function getSchemaForExport() {
 function getSchemaContextForPrompt() {
   const events = getAllEvents.all();
   return events.map(e => {
-    const desc = e.description ? `: ${e.description}` : '';
-    return `- ${e.name}${desc}`;
+    const desc = e.description ? ` - ${e.description}` : '';
+    const properties = getPropertiesByEventId.all(e.id);
+    const propNames = properties.map(p => p.name).join(', ');
+    const propsLine = propNames ? `\n    Properties: ${propNames}` : '';
+    return `- ${e.name}${desc}${propsLine}`;
   }).join('\n');
 }
 

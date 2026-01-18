@@ -168,6 +168,58 @@ tr:last-child td {
   font-style: italic;
 }
 
+/* Inline Editing */
+.description-cell {
+  cursor: pointer;
+  min-width: 200px;
+  max-width: 350px;
+  transition: background 0.15s;
+}
+
+.description-cell:hover {
+  background: #f3f0ff;
+}
+
+.description-cell.editing {
+  padding: 4px 8px;
+  background: white;
+}
+
+.description-cell.editing:hover {
+  background: white;
+}
+
+.inline-edit-input {
+  width: 100%;
+  min-width: 300px;
+  padding: 8px 10px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 2px solid #7c3aed;
+  border-radius: 4px;
+  outline: none;
+  box-sizing: border-box;
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.inline-edit-input::placeholder {
+  color: #999;
+}
+
+.edit-hint {
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.description-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Loading & Error states */
 .loading {
   text-align: center;
